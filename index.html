@@ -7832,6 +7832,8 @@
   .t-title { font-weight: 650; line-height: 1.3; color: var(--text); }
   .t-sub { font-size: 12.5px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
   .t-sub .artist { color: var(--gem); font-weight: 600; }
+  .artist-cell .artist { color: var(--gem); font-weight: 600; cursor: pointer; }
+  .artist-cell .artist:hover { text-decoration: underline; }
   td.genre { color: var(--muted); font-size: 13px; max-width: 160px; }
   td.decade { color: var(--muted); white-space: nowrap; }
   td.duration { color: var(--muted); white-space: nowrap; text-align: right; }
@@ -7951,6 +7953,7 @@
           <tr>
             <th class="num sortable" data-sort="rank">#<span class="arrow"></span></th>
             <th class="sortable" data-sort="track">Song<span class="arrow"></span></th>
+            <th class="sortable" data-sort="artist">Artist<span class="arrow"></span></th>
             <th class="h-genre">Genre</th>
             <th class="h-decade sortable" data-sort="decade">Era<span class="arrow"></span></th>
             <th class="h-duration num">Length</th>
@@ -8560,8 +8563,9 @@ function rowHTML(g) {
     <td class="rank">${g.rank}</td>
     <td class="title-cell">
       <div class="t-title">${esc(g.track)}</div>
-      <div class="t-sub"><span class="artist artist-sort" title="Sort by artist">${esc(g.artist)}</span>${album}</div>
+      <div class="t-sub">${g.album ? esc(g.album) : ''}</div>
     </td>
+    <td class="artist-cell"><span class="artist artist-sort" title="Sort by artist">${esc(g.artist)}</span></td>
     <td class="genre">${g.genre ? esc(g.genre) : '—'}</td>
     <td class="decade">${esc(g.decade)}</td>
     <td class="duration">${dur}</td>
