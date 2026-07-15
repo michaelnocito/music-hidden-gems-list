@@ -8589,10 +8589,14 @@ function voteCell(g) {
   </td>`;
 }
 
+/* Sorting names like a human: skip leading punctuation ("Weird Al"
+   Yankovic files under W, not under the quote character). */
+function sortKey(s) { return String(s).toLowerCase().replace(/^[^a-z0-9]+/, ''); }
+
 function render() {
   const sorted = [...GEMS].sort((a, b) => {
     const va = a[sortCol], vb = b[sortCol];
-    const cmp = (typeof va === 'string') ? va.localeCompare(vb) : va - vb;
+    const cmp = (typeof va === 'string') ? sortKey(va).localeCompare(sortKey(vb)) : va - vb;
     return cmp * sortDir;
   });
   tbody.innerHTML = sorted.map(rowHTML).join('');
