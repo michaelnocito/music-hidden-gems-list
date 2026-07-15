@@ -7774,6 +7774,12 @@
     transition: .12s;
   }
   .sortbtn:hover { color: var(--text); border-color: var(--gem-dim); }
+  .dlbar { display: inline-flex; align-items: center; gap: 8px; margin-left: 14px; }
+  .dlbtn {
+    border: 1px solid var(--line); border-radius: 8px; padding: 5px 11px;
+    font-size: 13px; color: var(--text); text-decoration: none; white-space: nowrap;
+  }
+  .dlbtn:hover { border-color: var(--gold); color: var(--gold); }
   .sortbtn.active { background: var(--gem); color: #06231f; border-color: var(--gem); }
 
   .fpanel { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 6px; }
@@ -7933,6 +7939,11 @@
         <button class="sortbtn" data-sort="devotion">Devotion</button>
         <button class="sortbtn" data-sort="listeners">Listeners</button>
         <button class="sortbtn" data-sort="artist">Artist A–Z</button>
+      </div>
+      <div class="dlbar">
+        <span class="slabel">Download</span>
+        <a class="dlbtn" href="music-hidden-gems.xlsx" download title="Formatted Excel workbook — all 500 gems with every column">⬇ Excel</a>
+        <a class="dlbtn" href="music-hidden-gems-playlist.csv" download title="Title/Artist/Album CSV — import into Apple Music or Spotify via Soundiiz, TuneMyMusic, or Playlisty">⬇ Playlist CSV</a>
       </div>
     </div>
     <div class="search"><input id="search" type="search" placeholder="Search artist, song, album…" /></div>
@@ -8491,6 +8502,7 @@
   <div class="wrap">
     <p style="max-width:660px;margin:0 auto 4px;">This is the browsable front-end. The full story — the SQL, the artist-name entity resolution, the text-join match-rate problem, and how the Gem Score was built — lives in the methodology repo:</p>
     <a class="repo" href="https://github.com/michaelnocito/music-hidden-gems" target="_blank" rel="noopener">🎵 <b>See how these were found</b> — the SQL + methodology on GitHub</a>
+    <p><b><a href="https://github.com/michaelnocito/music-hidden-gems" target="_blank" rel="noopener">Read the full SQL analysis ↗</a></b> — every threshold, join, and data-quality fix, teaching-commented.</p>
     <p>Data: Billboard Hot 100 (1958–2026) joined to Last.fm (snapshot 2026-07-15) · Companion to <a href="https://michaelnocito.github.io/steam-hidden-gems-list/" target="_blank" rel="noopener">Steam</a> and <a href="https://michaelnocito.github.io/streaming-hidden-gems-list/" target="_blank" rel="noopener">Streaming</a> Hidden Gems · Built by <a href="https://michaelnocito.github.io" target="_blank" rel="noopener">Michael Nocito</a>, data analyst.</p>
     <p style="margin-top:10px;">Found your next favorite song here? <a href="https://buymeacoffee.com/michaelnocito" target="_blank" rel="noopener" onclick="if(window.gtag)gtag('event','support_click',{kit:'music-hidden-gems-list',method:'buymeacoffee'})">Buy me a coffee ☕</a></p>
   </div>
