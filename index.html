@@ -7840,6 +7840,17 @@
   td.devotion .x { color: var(--muted); font-weight: 400; font-size: 12px; }
   td.score { color: var(--gold); font-weight: 800; text-align: right; white-space: nowrap; }
   td.link { white-space: nowrap; }
+  .vote-cell { white-space: nowrap; }
+  .vbtn {
+    background: none; border: 1px solid var(--line); border-radius: 8px;
+    padding: 3px 8px; cursor: pointer; font-size: 13px; color: var(--text);
+    margin-right: 4px;
+  }
+  .vbtn:hover:not(:disabled) { border-color: var(--gem); }
+  .vbtn:disabled { cursor: default; opacity: .55; }
+  .vbtn.on-gem { border-color: var(--gem); opacity: 1; box-shadow: 0 0 0 1px var(--gem) inset; }
+  .vbtn.on-meh { border-color: var(--meh); opacity: 1; box-shadow: 0 0 0 1px var(--meh) inset; }
+  .vbtn .vn { margin-left: 5px; color: var(--muted); font-size: 12px; }
   .lfm-link {
     display: inline-block; background: var(--card2); border: 1px solid var(--line);
     color: var(--text); padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600;
@@ -7946,6 +7957,7 @@
             <th class="num sortable" data-sort="devotion">Devotion<span class="arrow"></span></th>
             <th class="num sortable" data-sort="gem_score">Gem Score<span class="arrow"></span></th>
             <th>Listen</th>
+            <th class="h-vote">Verdict</th>
           </tr>
         </thead>
         <tbody id="tbody"><!-- SEO:ROWS:START -->
@@ -8487,6 +8499,54 @@ const tbody = document.getElementById('tbody');
 let GEMS = [];
 let sortCol = 'gem_score', sortDir = -1;
 
+/* ============ LIVE VOTING (shared Supabase, same DB as the Steam list) ============
+   Keys are prefixed "mhg:" so music votes never collide with game votes.
+   The anon key is safe to commit — RLS allows only insert-a-vote + read-counts. */
+const SUPABASE_URL = "https://aymrbkhwxpibxbilyqab.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5bXJia2h3eHBpYnhiaWx5cWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NDc1NDIsImV4cCI6MjA5OTEyMzU0Mn0.BMm5iN7RNMBvPChYtOQejy3gyphJngab4CKaG8xOw5U";
+const SB_HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY };
+let VOTES = {};
+const voterId = (() => {
+  let v = localStorage.getItem('mhg_voter');
+  if (!v) { v = 'v' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('mhg_voter', v); }
+  return v;
+})();
+const myVotes = JSON.parse(localStorage.getItem('mhg_myvotes') || '{}');
+
+async function loadVotes() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/gem_vote_counts?select=game,gems,mehs&game=like.mhg:*`, { headers: SB_HEADERS });
+    if (!r.ok) return;
+    (await r.json()).forEach(row => { VOTES[row.game] = { gem: row.gems, meh: row.mehs }; });
+    render();
+  } catch (e) { console.warn('vote counts unavailable', e); }
+}
+
+async function castVote(key, choice) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/gem_votes`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ game: key, choice, voter: voterId })
+    });
+    return r.ok;
+  } catch (e) { console.warn('vote failed', e); return false; }
+}
+
+tbody && tbody.addEventListener('click', async e => {
+  const btn = e.target.closest('.vbtn');
+  if (!btn || btn.disabled) return;
+  const key = btn.closest('.vote-cell').dataset.key;
+  const choice = btn.dataset.choice;
+  if (myVotes[key]) return;
+  myVotes[key] = choice;
+  localStorage.setItem('mhg_myvotes', JSON.stringify(myVotes));
+  VOTES[key] = VOTES[key] || { gem: 0, meh: 0 };
+  VOTES[key][choice === 'gem' ? 'gem' : 'meh']++;
+  render();
+  castVote(key, choice);
+});
+
 function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
 function rowHTML(g) {
@@ -8506,7 +8566,20 @@ function rowHTML(g) {
     <td class="devotion">${g.devotion.toFixed(1)}<span class="x">×</span></td>
     <td class="score">${g.gem_score.toFixed(1)}</td>
     <td class="link"><a class="lfm-link" href="${LFM(g)}" target="_blank" rel="noopener" title="Listen / verify on Last.fm">Last.fm ↗</a></td>
+    ${voteCell(g)}
   </tr>`;
+}
+
+function voteKey(g) { return 'mhg:' + g.artist + ' — ' + g.track; }
+
+function voteCell(g) {
+  const key = voteKey(g);
+  const c = VOTES[key] || { gem: 0, meh: 0 };
+  const mine = myVotes[key];
+  return `<td class="vote-cell" data-key="${esc(key)}">
+    <button class="vbtn ${mine === 'gem' ? 'on-gem' : ''}" data-choice="gem" ${mine ? 'disabled' : ''} title="Real gem">💎<span class="vn">${c.gem || ''}</span></button>
+    <button class="vbtn ${mine === 'meh' ? 'on-meh' : ''}" data-choice="meh" ${mine ? 'disabled' : ''} title="Radio was right">😴<span class="vn">${c.meh || ''}</span></button>
+  </td>`;
 }
 
 function render() {
@@ -8612,6 +8685,7 @@ function applyFilter() {
   GEMS = data.map((g, i) => ({ ...g, rank: i + 1 }));
   buildChips();
   render();
+  loadVotes();
 })();
 </script>
 </body>
