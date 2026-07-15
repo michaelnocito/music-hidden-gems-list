@@ -11,15 +11,15 @@
 </script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Music Hidden Gems — 500 songs the radio buried, ranked by devotion</title>
-<meta name="description" content="500 hidden gem songs — tracks by Billboard-charting artists that listeners love far out of proportion to their fame — surfaced with SQL from Billboard's Hot 100 history and 78,335 Last.fm tracks. Browse, sort, and filter the full list." />
-<meta property="og:title" content="Music Hidden Gems" />
-<meta property="og:description" content="500 songs the radio buried — high devotion, small audience — found with SQL across Billboard's Hot 100 and 78,335 Last.fm tracks. Sort by Gem Score, devotion, or listeners." />
+<title>Music Hidden Gems — the music people love that never made mainstream airplay</title>
+<meta name="description" content="Music Hidden Gems: the music people love that never made mainstream airplay. 500 never-charted songs by Top 40 artists, ranked by listener devotion — surfaced with SQL from Billboard's Hot 100 history and 78,335 Last.fm tracks. Browse, sort, filter, and vote." />
+<meta property="og:title" content="Music Hidden Gems — the music people love that never made mainstream airplay" />
+<meta property="og:description" content="500 never-charted songs by Top 40 artists, ranked by how hard their listeners replay them. Sort by Gem Score, devotion, listeners, or artist; filter by decade and genre; vote on the picks." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://michaelnocito.github.io/music-hidden-gems-list/" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Music Hidden Gems" />
-<meta name="twitter:description" content="500 songs the radio buried, found with SQL. High devotion, small audience — ranked by a Gem Score." />
+<meta name="twitter:title" content="Music Hidden Gems — the music people love that never made mainstream airplay" />
+<meta name="twitter:description" content="500 never-charted songs by Top 40 artists, ranked by listener devotion. Found with SQL; sort, filter, and vote." />
 <link rel="canonical" href="https://michaelnocito.github.io/music-hidden-gems-list/" />
 <meta name="author" content="Michael Nocito" />
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
@@ -35,8 +35,8 @@
       "@type": "CollectionPage",
       "@id": "https://michaelnocito.github.io/music-hidden-gems-list/#webpage",
       "url": "https://michaelnocito.github.io/music-hidden-gems-list/",
-      "name": "Music Hidden Gems — 500 songs the radio buried",
-      "description": "500 songs by Billboard-charting artists that listeners love far out of proportion to their fame, surfaced with SQL and ranked by a Gem Score.",
+      "name": "Music Hidden Gems — the music people love that never made mainstream airplay",
+      "description": "The music people love that never made mainstream airplay: 500 songs by Billboard-charting artists that listeners love far out of proportion to their fame, surfaced with SQL and ranked by a Gem Score.",
       "author": {
         "@type": "Person",
         "@id": "https://michaelnocito.github.io/#michaelnocito",
@@ -72,8 +72,8 @@
     {
       "@type": "Dataset",
       "@id": "https://michaelnocito.github.io/music-hidden-gems-list/#dataset",
-      "name": "Music Hidden Gems — 500 songs the radio buried",
-      "description": "500 hidden gem songs surfaced with SQL by joining Billboard's Hot 100 history to 78,335 Last.fm tracks. Ranked by a Gem Score = 70% devotion percentile (plays per listener) + 30% audience percentile.",
+      "name": "Music Hidden Gems — the music people love that never made mainstream airplay",
+      "description": "The music people love that never made mainstream airplay: 500 hidden gem songs surfaced with SQL by joining Billboard's Hot 100 history to 78,335 Last.fm tracks. Ranked by a Gem Score = 70% devotion percentile (plays per listener) + 30% audience percentile.",
       "url": "https://michaelnocito.github.io/music-hidden-gems-list/",
       "creator": {
         "@type": "Person",
@@ -7908,7 +7908,7 @@
   <div class="wrap">
     <span class="eyebrow">✦ Found with SQL, not radio play</span>
     <h1>Music Hidden Gems</h1>
-    <p class="sub">Songs by Billboard-charting artists that listeners love far out of proportion to their fame. I joined <b style="color:#fff">Billboard's Hot 100</b> history to <b style="color:#fff">78,335</b> Last.fm tracks with SQL to surface the ones the radio buried.</p>
+    <p class="sub"><b style="color:#fff">The music people love that never made mainstream airplay.</b> I joined <b style="color:#fff">Billboard's Hot 100</b> history to <b style="color:#fff">78,335</b> Last.fm tracks with SQL to find the never-charted songs that listeners replay hardest.</p>
     <div class="stats">
       <div class="stat"><div class="num">78,335</div><div class="lbl">Tracks analyzed</div></div>
       <div class="stat"><div class="num gem">7,574</div><div class="lbl">Hidden gems found</div></div>
@@ -7930,6 +7930,7 @@
         <button class="sortbtn active" data-sort="gem_score">Gem Score</button>
         <button class="sortbtn" data-sort="devotion">Devotion</button>
         <button class="sortbtn" data-sort="listeners">Listeners</button>
+        <button class="sortbtn" data-sort="artist">Artist A–Z</button>
       </div>
     </div>
     <div class="search"><input id="search" type="search" placeholder="Search artist, song, album…" /></div>
@@ -8534,6 +8535,8 @@ async function castVote(key, choice) {
 }
 
 tbody && tbody.addEventListener('click', async e => {
+  const artistEl = e.target.closest('.artist-sort');
+  if (artistEl) { sortCol = 'artist'; sortDir = 1; render(); return; }
   const btn = e.target.closest('.vbtn');
   if (!btn || btn.disabled) return;
   const key = btn.closest('.vote-cell').dataset.key;
@@ -8557,7 +8560,7 @@ function rowHTML(g) {
     <td class="rank">${g.rank}</td>
     <td class="title-cell">
       <div class="t-title">${esc(g.track)}</div>
-      <div class="t-sub"><span class="artist">${esc(g.artist)}</span>${album}</div>
+      <div class="t-sub"><span class="artist artist-sort" title="Sort by artist">${esc(g.artist)}</span>${album}</div>
     </td>
     <td class="genre">${g.genre ? esc(g.genre) : '—'}</td>
     <td class="decade">${esc(g.decade)}</td>
@@ -8616,7 +8619,8 @@ document.querySelectorAll('thead th.sortable').forEach(th => {
 document.querySelectorAll('.sortbtn').forEach(btn => {
   btn.addEventListener('click', () => {
     const col = btn.dataset.sort;
-    if (sortCol === col) { sortDir = -sortDir; } else { sortCol = col; sortDir = -1; }
+    if (sortCol === col) { sortDir = -sortDir; }
+    else { sortCol = col; sortDir = (col === 'artist' || col === 'track') ? 1 : -1; }
     render();
   });
 });

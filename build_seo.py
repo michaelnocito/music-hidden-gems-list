@@ -169,8 +169,9 @@ def build_jsonld(gems, items):
     dataset = {
         "@type": "Dataset",
         "@id": PAGE_URL + "#dataset",
-        "name": "Music Hidden Gems — 500 songs the radio buried",
+        "name": "Music Hidden Gems — the music people love that never made mainstream airplay",
         "description": (
+            f"The music people love that never made mainstream airplay: "
             f"{SHOWN} hidden gem songs surfaced with SQL by joining Billboard's Hot 100 history to "
             f"{TRACKS_ANALYZED:,} Last.fm tracks. Ranked by a Gem Score = 70% devotion percentile "
             f"(plays per listener) + 30% audience percentile."
@@ -191,8 +192,9 @@ def build_jsonld(gems, items):
         "@type": "CollectionPage",
         "@id": PAGE_URL + "#webpage",
         "url": PAGE_URL,
-        "name": "Music Hidden Gems — 500 songs the radio buried",
+        "name": "Music Hidden Gems — the music people love that never made mainstream airplay",
         "description": (
+            f"The music people love that never made mainstream airplay: "
             f"{SHOWN} songs by Billboard-charting artists that listeners love far out of proportion to their fame, "
             f"surfaced with SQL and ranked by a Gem Score."
         ),

@@ -1,5 +1,7 @@
 # Music Hidden Gems — the list site
 
+**The music people love that never made mainstream airplay.**
+
 Browsable front-end for the 500 top hidden gem songs found in the
 [music-hidden-gems](https://github.com/michaelnocito/music-hidden-gems)
 SQL analysis. Companion to
