@@ -15,7 +15,7 @@ same format and design.
 - `index.html` — the whole site (no framework, no build server). A sortable,
   filterable table of the top 500 gems.
 - `gems.json` — the data, exported straight from the analysis database
-  (Billboard Hot 100 joined to Last.fm, snapshot 2026-07-14). A bare array,
+  (Billboard Hot 100 joined to Last.fm, snapshot 2026-07-15). A bare array,
   pre-sorted by Gem Score descending.
 - `build_seo.py` — bakes the 500 rows, an About/limitations FAQ, and
   `schema.org` JSON-LD into `index.html` as static HTML so AI crawlers (which
@@ -25,8 +25,11 @@ same format and design.
 ## What a gem is
 
 A track by an artist who charted **5+ times** on the Billboard Hot 100
-(1958–2026), where the track itself shows high **devotion** — plays per
-listener on Last.fm — while keeping a modest audience. Songs the radio buried.
+(1958–2026) **including at least one Top 40 hit**, where the track itself
+**never charted** yet shows high **devotion** — 6+ plays per listener on
+Last.fm — while keeping a modest audience (1,000–200,000 listeners). Songs
+the radio buried. The page shows the top 500 by Gem Score, capped at three
+gems per artist.
 
 **Gem Score = 70% devotion percentile + 30% audience percentile**, scaled to
 0–100. Devotion is weighted heavier on purpose: a small, obsessed audience
