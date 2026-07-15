@@ -37,9 +37,9 @@ MODIFIED = "2026-07-15"
 # Pipeline facts (from the analysis repo), stated once here.
 TRACKS_ANALYZED = 78335
 KNOWN_ARTISTS = 1570
-TOTAL_GEMS = 7692
+TOTAL_GEMS = 7574
 SHOWN = 500
-LASTFM_SNAPSHOT = "2026-07-14"
+LASTFM_SNAPSHOT = "2026-07-15"
 
 
 def esc(s):
@@ -80,10 +80,13 @@ def faq_items(gems):
     top = gems[0]
     return [
         ("What counts as a “hidden gem” song here?",
-         f'A track by an artist who charted <b>5 or more times</b> on the Billboard Hot 100 (1958–2026), '
-         f'where the <i>track itself</i> shows high <b>devotion</b> — plays per listener on Last.fm — while keeping a '
-         f'modest audience. The idea is songs the radio buried: real, repeated listening from the people who found them, '
-         f'without the mainstream reach. Of {TOTAL_GEMS:,} tracks that cleared the bar, these are the top {SHOWN} by Gem Score.'),
+         f'A track by an artist who charted <b>5 or more times</b> on the Billboard Hot 100 (1958–2026) <b>including at '
+         f'least one Top 40 hit</b> — so every artist here is someone radio genuinely made familiar — where the <i>track '
+         f'itself</i> shows high <b>devotion</b> — plays per listener on Last.fm — while keeping a modest audience '
+         f'(1,000–200,000 listeners) and having <b>never appeared on the Hot 100</b>. The idea is songs the radio buried: '
+         f'real, repeated listening from the people who found them, without the mainstream reach. Of {TOTAL_GEMS:,} tracks '
+         f'that cleared the bar, these are the top {SHOWN} by Gem Score, capped at <b>three gems per artist</b> so no one '
+         f'act floods the list.'),
         ("What is the Gem Score, exactly?",
          f'<b>Gem Score = 70% devotion percentile + 30% audience percentile.</b> Each track is ranked against every other '
          f'gem on two axes — plays-per-listener (devotion) and total listeners (audience) — and the two percentile ranks '
@@ -117,7 +120,8 @@ def faq_items(gems):
          'a quietly beloved song from an era with fewer scrobblers.'),
         ("How were these found, and how should I cite this?",
          f'With SQL. I joined Billboard’s Hot 100 weekly history to <b>{TRACKS_ANALYZED:,} Last.fm tracks</b> from the '
-         f'{KNOWN_ARTISTS:,} artists who charted 5+ times, then ranked by the Gem Score above. The full methodology and '
+         f'{KNOWN_ARTISTS:,} artists who charted 5+ times, kept the never-charted tracks by Top 40 artists, and ranked '
+         f'by the Gem Score above (max three per artist). The full methodology and '
          f'teaching-commented SQL live in the <a href="{REPO_URL}">companion repository</a>. '
          f'Cite as “Music Hidden Gems (Michael Nocito, 2026), michaelnocito.github.io/music-hidden-gems-list”. '
          f'Chart data: Billboard Hot 100; listening data: Last.fm (snapshot {LASTFM_SNAPSHOT}).'),
