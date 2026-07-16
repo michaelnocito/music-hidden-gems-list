@@ -7895,6 +7895,10 @@
 
     /* filters become a bottom sheet, not part of the sticky flow */
     body.filters-open { overflow: hidden; }
+    /* .controls' sticky z-index:30 creates a stacking context that would trap
+       the sheet UNDER the z-90 backdrop (taps then hit the backdrop and close
+       the sheet instead of toggling chips). Lift it above while open. */
+    body.filters-open .controls { z-index: 95; }
     .fbackdrop:not(.hidden) {
       display: block; position: fixed; inset: 0; background: rgba(6,8,14,.6); z-index: 90;
     }
@@ -7945,6 +7949,10 @@
     }
     td.genre::before, td.decade::before, td.duration::before,
     td.listeners::before, td.devotion::before { content: ""; }
+    td.decade {
+      color: var(--gem); border: 1px solid var(--gem-dim); border-radius: 999px;
+      padding: 0 8px; font-weight: 600;
+    }
     td.listeners .lfull { display: none; }
     td.listeners .labbr { display: inline; }
     td.listeners::after { content: " listeners"; color: var(--muted); opacity: .7; }
