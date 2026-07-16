@@ -7868,14 +7868,78 @@
 
   .count-note { color: var(--muted); font-size: 13px; padding: 12px 16px; }
 
-  /* Mobile: drop low-value columns rather than squishing everything */
+  /* Mid-size: drop low-value columns rather than squishing a table */
   @media (max-width: 900px) {
     td.genre, thead th.h-genre { display: none; }
     td.duration, thead th.h-duration { display: none; }
   }
+
+  /* ============ MOBILE: control strip + filter bottom-sheet + card table ============ */
   @media (max-width: 640px) {
-    td.listeners, thead th.h-listeners { display: none; }
-    td.decade, thead th.h-decade { display: none; }
+    /* backdrop-filter makes .controls a containing block for position:fixed,
+       which would anchor the filter sheet to the bar instead of the screen.
+       Drop it on mobile so the sheet pins to the viewport. */
+    .controls { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(11,14,23,.97); }
+    /* one swipeable strip instead of the controls wrapping into a tall stack */
+    .controls .inner {
+      flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px; justify-content: flex-start;
+    }
+    .ctrl-left { flex-wrap: nowrap; flex-shrink: 0; }
+    .sortbar, .dlbar { flex-wrap: nowrap; flex-shrink: 0; }
+    .dlbar { margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--line); }
+    .search { flex-shrink: 0; }
+    .search input { width: 150px; }
+
+    /* filters become a bottom sheet, not part of the sticky flow */
+    body.filters-open { overflow: hidden; }
+    .fbackdrop:not(.hidden) {
+      display: block; position: fixed; inset: 0; background: rgba(6,8,14,.6); z-index: 90;
+    }
+    #fpanel {
+      position: fixed; left: 0; right: 0; bottom: 0; top: 14vh; margin: 0;
+      z-index: 100; background: var(--bg2); border: 1px solid var(--line); border-top: 1px solid var(--line);
+      border-radius: 18px 18px 0 0; padding: 0; display: flex; flex-direction: column;
+      box-shadow: 0 -10px 34px rgba(0,0,0,.45);
+    }
+    .fpanel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 18px; border-bottom: 1px solid var(--line); flex-shrink: 0; font-weight: 800;
+    }
+    .fpanel-close {
+      background: var(--gem); color: #06231f; border: none; border-radius: 999px;
+      padding: 7px 18px; font-weight: 700; font-size: 13.5px; cursor: pointer;
+    }
+    .fpanel-body { overflow-y: auto; padding: 6px 18px 24px; -webkit-overflow-scrolling: touch; }
+    .fgroup { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .fgroup .flabel { width: auto; }
+
+    /* the table becomes a stack of cards; no more sideways scrolling */
+    .tscroll { overflow: visible; max-height: none; }
+    table, thead, tbody, tr { display: block; width: 100%; }
+    thead { display: none; }
+    tbody tr {
+      background: var(--card2); border: 1px solid var(--line); border-radius: 14px;
+      margin: 12px 14px; padding: 14px 16px; position: relative;
+    }
+    tbody tr:nth-child(even) { background: var(--card2); }
+    td { display: block; width: auto; padding: 2px 0; border-bottom: none; }
+    td.rank {
+      position: absolute; top: 12px; right: 14px; width: auto; color: var(--muted);
+      font-size: 12px; background: var(--card); border: 1px solid var(--line);
+      border-radius: 999px; padding: 1px 8px;
+    }
+    td.title-cell { padding-right: 44px; margin-bottom: 6px; }
+    td.artist-cell, td.genre, td.decade, td.duration, td.listeners, td.devotion, td.score {
+      display: inline-block; margin: 3px 10px 3px 0; font-size: 13px;
+    }
+    td.artist-cell::before, td.genre::before, td.decade::before, td.duration::before,
+    td.listeners::before, td.devotion::before, td.score::before {
+      content: attr(data-label) ": "; color: var(--muted); font-weight: 700;
+      font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em;
+    }
+    td.score { color: var(--gold); font-weight: 800; }
+    td.link, .vote-cell { display: inline-flex; margin-top: 10px; margin-right: 10px; }
   }
 
   footer {
@@ -7950,11 +8014,18 @@
   </div>
   <div class="wrap">
     <div id="fpanel" class="fpanel hidden">
-      <div class="fgroup"><span class="flabel">Decade</span><span id="fDecade"></span></div>
-      <div class="fgroup"><span class="flabel">Genre</span><span id="fGenre"></span><button id="fclear" class="fclear">Clear all</button></div>
+      <div class="fpanel-head">
+        <span>Filters</span>
+        <button id="fpanelClose" class="fpanel-close">Done</button>
+      </div>
+      <div class="fpanel-body">
+        <div class="fgroup"><span class="flabel">Decade</span><span id="fDecade"></span></div>
+        <div class="fgroup"><span class="flabel">Genre</span><span id="fGenre"></span><button id="fclear" class="fclear">Clear all</button></div>
+      </div>
     </div>
   </div>
 </div>
+<div id="fbackdrop" class="fbackdrop hidden"></div>
 
 <div class="wrap">
   <div class="tablewrap">
@@ -8577,13 +8648,13 @@ function rowHTML(g) {
       <div class="t-title">${esc(g.track)}</div>
       <div class="t-sub">${g.album ? esc(g.album) : ''}</div>
     </td>
-    <td class="artist-cell"><span class="artist artist-sort" title="Sort by artist">${esc(g.artist)}</span></td>
-    <td class="genre">${g.genre ? esc(g.genre) : '—'}</td>
-    <td class="decade">${esc(g.decade)}</td>
-    <td class="duration">${dur}</td>
-    <td class="listeners">${g.listeners.toLocaleString()}</td>
-    <td class="devotion">${g.devotion.toFixed(1)}<span class="x">×</span></td>
-    <td class="score">${g.gem_score.toFixed(1)}</td>
+    <td class="artist-cell" data-label="Artist"><span class="artist artist-sort" title="Sort by artist">${esc(g.artist)}</span></td>
+    <td class="genre" data-label="Genre">${g.genre ? esc(g.genre) : '—'}</td>
+    <td class="decade" data-label="Era">${esc(g.decade)}</td>
+    <td class="duration" data-label="Length">${dur}</td>
+    <td class="listeners" data-label="Listeners">${g.listeners.toLocaleString()}</td>
+    <td class="devotion" data-label="Devotion">${g.devotion.toFixed(1)}<span class="x">×</span></td>
+    <td class="score" data-label="Gem Score">${g.gem_score.toFixed(1)}</td>
     <td class="link"><a class="lfm-link" href="${LFM(g)}" target="_blank" rel="noopener" title="Listen / verify on Last.fm">Last.fm ↗</a></td>
     ${voteCell(g)}
   </tr>`;
@@ -8671,9 +8742,16 @@ function buildChips() {
   mk('fGenre', genres, 'genre');
 }
 
+function setFiltersOpen(open) {
+  document.getElementById('fpanel').classList.toggle('hidden', !open);
+  document.getElementById('fbackdrop').classList.toggle('hidden', !open);
+  document.body.classList.toggle('filters-open', open);
+}
 document.getElementById('filterToggle').addEventListener('click', () => {
-  document.getElementById('fpanel').classList.toggle('hidden');
+  setFiltersOpen(document.getElementById('fpanel').classList.contains('hidden'));
 });
+document.getElementById('fpanelClose').addEventListener('click', () => setFiltersOpen(false));
+document.getElementById('fbackdrop').addEventListener('click', () => setFiltersOpen(false));
 document.getElementById('fclear').addEventListener('click', () => {
   state.decade.clear(); state.genre.clear();
   document.querySelectorAll('.chip.active').forEach(c => c.classList.remove('active'));

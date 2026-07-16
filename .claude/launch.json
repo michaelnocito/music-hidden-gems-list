@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "music-hidden-gems-list",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "4310"],
+      "port": 4310
+    }
+  ]
+}
