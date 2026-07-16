@@ -7838,12 +7838,14 @@
   .t-title { font-weight: 650; line-height: 1.3; color: var(--text); }
   .t-sub { font-size: 12.5px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
   .t-sub .artist { color: var(--gem); font-weight: 600; }
+  .t-artist-m { display: none; }  /* artist-under-title is mobile-only; desktop uses the Artist column */
   .artist-cell .artist { color: var(--gem); font-weight: 600; cursor: pointer; }
   .artist-cell .artist:hover { text-decoration: underline; }
   td.genre { color: var(--muted); font-size: 13px; max-width: 160px; }
   td.decade { color: var(--muted); white-space: nowrap; }
   td.duration { color: var(--muted); white-space: nowrap; text-align: right; }
   td.listeners { color: var(--muted); text-align: right; white-space: nowrap; }
+  .labbr { display: none; }  /* full count on desktop; abbreviated (192K) only on mobile */
   td.devotion { color: var(--text); font-weight: 650; text-align: right; white-space: nowrap; }
   td.devotion .x { color: var(--muted); font-weight: 400; font-size: 12px; }
   td.score { color: var(--gold); font-weight: 800; text-align: right; white-space: nowrap; }
@@ -7914,32 +7916,42 @@
     .fgroup { flex-direction: column; align-items: flex-start; gap: 8px; }
     .fgroup .flabel { width: auto; }
 
-    /* the table becomes a stack of cards; no more sideways scrolling */
+    /* the table becomes a tight stack of cards; no sideways scrolling */
     .tscroll { overflow: visible; max-height: none; }
     table, thead, tbody, tr { display: block; width: 100%; }
     thead { display: none; }
     tbody tr {
-      background: var(--card2); border: 1px solid var(--line); border-radius: 14px;
-      margin: 12px 14px; padding: 14px 16px; position: relative;
+      background: var(--card2); border: 1px solid var(--line); border-radius: 12px;
+      margin: 8px 12px; padding: 10px 13px; position: relative;
     }
     tbody tr:nth-child(even) { background: var(--card2); }
-    td { display: block; width: auto; padding: 2px 0; border-bottom: none; }
+    tbody td { display: block; width: auto; padding: 0; border-bottom: none; line-height: 1.35; }
+
     td.rank {
-      position: absolute; top: 12px; right: 14px; width: auto; color: var(--muted);
-      font-size: 12px; background: var(--card); border: 1px solid var(--line);
-      border-radius: 999px; padding: 1px 8px;
+      position: absolute; top: 9px; right: 11px; width: auto; color: var(--muted);
+      font-size: 11px; background: var(--card); border: 1px solid var(--line);
+      border-radius: 999px; padding: 0 7px; line-height: 17px;
     }
-    td.title-cell { padding-right: 44px; margin-bottom: 6px; }
-    td.artist-cell, td.genre, td.decade, td.duration, td.listeners, td.devotion, td.score {
-      display: inline-block; margin: 3px 10px 3px 0; font-size: 13px;
+    /* title + artist stacked tight; album hidden, separate artist column hidden */
+    td.title-cell { padding-right: 40px; }
+    .t-title { font-size: 15px; line-height: 1.25; }
+    .t-artist-m { display: block; color: var(--gem); font-weight: 600; font-size: 13px; margin-top: 1px; }
+    .t-sub { display: none; }
+    td.artist-cell { display: none; }
+
+    /* one compact meta line: no uppercase labels, just values */
+    td.genre, td.decade, td.duration, td.listeners, td.devotion, td.score {
+      display: inline-block; margin: 5px 9px 0 0; font-size: 12px; color: var(--muted);
     }
-    td.artist-cell::before, td.genre::before, td.decade::before, td.duration::before,
-    td.listeners::before, td.devotion::before, td.score::before {
-      content: attr(data-label) ": "; color: var(--muted); font-weight: 700;
-      font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em;
-    }
-    td.score { color: var(--gold); font-weight: 800; }
-    td.link, .vote-cell { display: inline-flex; margin-top: 10px; margin-right: 10px; }
+    td.genre::before, td.decade::before, td.duration::before,
+    td.listeners::before, td.devotion::before { content: ""; }
+    td.listeners .lfull { display: none; }
+    td.listeners .labbr { display: inline; }
+    td.listeners::after { content: " listeners"; color: var(--muted); opacity: .7; }
+    td.score { color: var(--gold); font-weight: 800; font-size: 13px; }
+    td.score::before { content: "💎 "; }
+
+    td.link, .vote-cell { display: inline-flex; margin-top: 8px; margin-right: 8px; }
   }
 
   footer {
@@ -8638,6 +8650,10 @@ tbody && tbody.addEventListener('click', async e => {
 
 function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 
+function abbrNum(n) {
+  return n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'
+       : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(n);
+}
 function rowHTML(g) {
   const dur = g.duration ? esc(g.duration) : '—';
   const album = g.album ? ' · ' + esc(g.album) : '';
@@ -8646,13 +8662,14 @@ function rowHTML(g) {
     <td class="rank">${g.rank}</td>
     <td class="title-cell">
       <div class="t-title">${esc(g.track)}</div>
+      <div class="t-artist-m">${esc(g.artist)}</div>
       <div class="t-sub">${g.album ? esc(g.album) : ''}</div>
     </td>
     <td class="artist-cell" data-label="Artist"><span class="artist artist-sort" title="Sort by artist">${esc(g.artist)}</span></td>
     <td class="genre" data-label="Genre">${g.genre ? esc(g.genre) : '—'}</td>
     <td class="decade" data-label="Era">${esc(g.decade)}</td>
     <td class="duration" data-label="Length">${dur}</td>
-    <td class="listeners" data-label="Listeners">${g.listeners.toLocaleString()}</td>
+    <td class="listeners" data-label="Listeners"><span class="lfull">${g.listeners.toLocaleString()}</span><span class="labbr">${abbrNum(g.listeners)}</span></td>
     <td class="devotion" data-label="Devotion">${g.devotion.toFixed(1)}<span class="x">×</span></td>
     <td class="score" data-label="Gem Score">${g.gem_score.toFixed(1)}</td>
     <td class="link"><a class="lfm-link" href="${LFM(g)}" target="_blank" rel="noopener" title="Listen / verify on Last.fm">Last.fm ↗</a></td>
