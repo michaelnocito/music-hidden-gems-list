@@ -143,7 +143,7 @@ def build_jsonld(gems, items):
         "@id": AUTHOR_URL + "/#michaelnocito",
         "name": "Michael Nocito",
         "url": AUTHOR_URL,
-        "jobTitle": "Data Analyst",
+        "jobTitle": "Implementation Analyst",
     }
     item_list = {
         "@type": "ItemList",
